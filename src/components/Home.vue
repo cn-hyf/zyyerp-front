@@ -1,11 +1,18 @@
 <template>
   <div>
-    home组件
+    <el-button type="info" @click="logout">退出登录</el-button>
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  methods: {
+    logout(){
+      window.sessionStorage.clear(); // 清空token
+      this.$router.push("/login")   // 跳转到登录页面
+    }
+  }
+};
 </script>
 
 <style lang="less" scoped>
