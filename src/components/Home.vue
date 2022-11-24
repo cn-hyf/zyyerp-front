@@ -1,7 +1,13 @@
 <template>
   <el-container class="home-container">
     <!--页面区域-->
-    <el-header>Header <el-button type="info" @click="logout">退出登录</el-button></el-header>
+    <el-header>
+      <div>
+        <img src="../assets/xtb.png" alt="">
+        <span>制衣业管理系统</span>
+      </div>
+      <el-button type="info" @click="logout">退出</el-button>
+    </el-header>
     <!--页面主体区域-->
   <el-container>
     <!--页面侧边栏-->
@@ -29,6 +35,19 @@ export default {
 }
 .el-header{
   background-color: #373d41;
+  display: flex;    // 用于把图标和退出按钮布局
+  justify-content: space-between; // 用于把图标和登录按钮布局，图标左边贴边对齐，退出按钮在右边贴边对齐，还有一定的空隙
+  padding-left: 0px;  // 用于把图标和退出按钮布局，解决图标左边贴边对齐的空隙
+  align-items: center;  // 用于把图标和退出按钮布局，解决了登录按钮上下紧贴边的问题
+  color: #fff;
+  font-size: 20px;
+  > div {
+    display: flex;
+    align-items: center;  // 制衣业管理系统在el-header上下的中间显示
+    span {
+      margin-left: 15px;
+    }
+  }
 }
 .el-aside{
   background-color: #333744;
