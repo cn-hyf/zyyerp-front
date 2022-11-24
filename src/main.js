@@ -13,8 +13,8 @@ import './assets/fonts/iconfont.css'; //导入字体图标，第一步
 import axios from 'axios';
 axios.defaults.baseURL = 'http://127.0.0.1:80/' // 匹配请求的根路径
 axios.interceptors.request.use(config=> {   //通过axios请求拦截器添加token，保证拥有获取数据的权限，相当于预处理
-  // 为每次axios请求的请求头对象添加token验证的Authorization字段，那么以后有权限的请求就可以调用成功了。
-  config.headers.Authorization = window.sessionStorage.getItem('token')
+  // 为每次axios请求的请求头对象添加token验证的Authorization字段，那么以后有权限的请求就可以调用成功了。//encodeURIComponent()对中文信息进行编码
+  config.headers.Authorization = encodeURIComponent(window.sessionStorage.getItem('token'))
   return config
 })
 Vue.prototype.$http=axios   // 每个vue组件都可以通过this直接访问$http，从而发起axios请求

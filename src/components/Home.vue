@@ -12,26 +12,26 @@
     <el-container>
       <!--页面侧边栏-->
       <el-aside width="200px">
-        <!--侧边栏菜单区域-->
+        <!--侧边栏菜单区域，使用两个for循环，外循环是一级菜单，内循环是二级菜单-->
         <el-menu background-color="#333747" text-color="#fff" active-text-color="#ffd04b">
-          <!--一级菜单-->
-          <el-submenu index="1">
+          <!--一级菜单 说明：index保存的是字符串，但item.id是数值，需要把数值变成字符串：item.id + ''  就是变成字符串-->
+          <el-submenu :index="item.id+ ''" v-for="item in menulist" :key="item.id">  
             <!--一级菜单的模板区域-->
             <template slot="title">
               <!--图标-->
               <i class="el-icon-location"></i>
               <!--文本-->
-              <span>导航一</span>
+              <span>{{item.title}}</span>
             </template>
             
              <!--二级菜单-->
-            <el-menu-item index="1-1">
+            <el-menu-item :index="subItem.id + ''" v-for="subItem in item.children" :key="subItem.id">
               <!--二级菜单的模板区域-->
               <template slot="title">
                 <!--图标-->
                 <i class="el-icon-location"></i>
                 <!--文本-->
-                <span>选项1</span>
+                <span>{{subItem.title}}</span>
               </template>
             </el-menu-item>
           </el-submenu>
@@ -45,11 +45,35 @@
 
 <script>
 export default {
+  data(){
+    return {
+      // 左侧菜单数据
+      menulist: []
+    }
+  },  
+  created(){
+    this.getMenuList()
+  },
   methods: {
     logout() {
       window.sessionStorage.clear(); // 清空token
       this.$router.push('/login'); // 跳转到登录页面
     },
+    // 拉取所有的菜单
+    getMenuList(){
+      this.$http
+          .get('/menu/treeList') //login参数表示请求地址，this.loginForm表示请求参数
+          .then((res) => {
+            if (res.data.code == 200) {
+              this.menulist = res.data.data
+            } else {
+              this.$message.error('获取数据失败!');
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+    }
   },
 };
 </script>
