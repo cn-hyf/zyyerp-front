@@ -13,7 +13,7 @@
       <!--页面侧边栏-->
       <el-aside width="200px">
         <!--侧边栏菜单区域，使用两个for循环，外循环是一级菜单，内循环是二级菜单-->
-        <el-menu background-color="#333747" text-color="#fff" active-text-color="#409EFE">
+        <el-menu background-color="#333747" text-color="#fff" active-text-color="#409EFE" :unique-opened="true">
           <!--一级菜单 说明：index保存的是字符串，但item.id是数值，需要把数值变成字符串：item.id + ''  就是变成字符串-->
           <el-submenu :index="item.id+ ''" v-for="item in menulist" :key="item.id">  
             <!--一级菜单的模板区域-->
@@ -100,6 +100,9 @@ export default {
 }
 .el-aside {
   background-color: #333744;
+  .el-menu{
+        border-right: none;   //解决左侧菜单栏的那条直线突出问题
+  }
 }
 .el-main {
   background-color: #eaedf1;
