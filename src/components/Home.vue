@@ -18,7 +18,8 @@
         :unique-opened="true" 
         :collapse="isCollapse" 
         :collapse-transition="false" 
-        :router="true">   <!--router表示是否使用 vue-router 的模式，启用该模式会在激活导航时以 index 作为 path 进行路由跳转-->
+        :router="true"  
+        :default-active="activePath">   <!--router表示是否使用 vue-router 的模式，启用该模式会在激活导航时以 index 作为 path 进行路由跳转。default-active当前激活菜单的 index,用来实现选中的左侧菜单高亮-->
           <!--一级菜单 说明：index保存的是字符串，但item.id是数值，需要把数值变成字符串：item.id + ''  就是变成字符串-->
           <el-submenu :index="item.id+ ''" v-for="item in menulist" :key="item.id">  
             <!--一级菜单的模板区域-->
@@ -30,7 +31,7 @@
             </template>
             
              <!--二级菜单-->
-            <el-menu-item :index="'/' + subItem.name" v-for="subItem in item.children" :key="subItem.id">
+            <el-menu-item :index="'/' + subItem.name" v-for="subItem in item.children" :key="subItem.id" @click="saveNavState('/' + subItem.name)">
               <!--二级菜单的模板区域-->
               <template slot="title">
                 <!--图标-->
@@ -58,10 +59,13 @@ export default {
       // 左侧菜单数据
       menulist: [],
       isCollapse: false,
+      //被激活的链接地址，用来实现左侧菜单栏的高亮
+      activePath: ''
     }
   },  
   created(){
     this.getMenuList()
+    this.activePath = window.sessionStorage.getItem('activePath')
   },
   methods: {
     logout() {
@@ -86,6 +90,11 @@ export default {
     // 点击按钮，切换左侧菜单的折叠与展开
     toggleCollapse(){
       this.isCollapse = !this.isCollapse  // isCollapse取反，true变成false，false变成true
+    },
+    // 保存链接的激活状态，用来实现左侧菜单栏的高亮
+    saveNavState(activePath){
+      window.sessionStorage.setItem('activePath',activePath);
+      this.activePath = activePath
     }
   },
 };
