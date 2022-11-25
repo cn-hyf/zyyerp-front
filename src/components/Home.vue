@@ -11,9 +11,10 @@
     <!--页面主体区域-->
     <el-container>
       <!--页面侧边栏-->
-      <el-aside width="200px">
+      <el-aside :width="isCollapse ? '64px' : '200px' ">  <!--isCollapse为true时表示折叠，宽度为64px；isCollapse为false时表示展开，宽度为200px-->
+        <div class="toggle-button" @click="toggleCollapse">|||</div>  
         <!--侧边栏菜单区域，使用两个for循环，外循环是一级菜单，内循环是二级菜单-->
-        <el-menu background-color="#333747" text-color="#fff" active-text-color="#409EFE" :unique-opened="true">
+        <el-menu background-color="#333747" text-color="#fff" active-text-color="#409EFE" :unique-opened="true" :collapse="isCollapse" :collapse-transition="false">
           <!--一级菜单 说明：index保存的是字符串，但item.id是数值，需要把数值变成字符串：item.id + ''  就是变成字符串-->
           <el-submenu :index="item.id+ ''" v-for="item in menulist" :key="item.id">  
             <!--一级菜单的模板区域-->
@@ -48,7 +49,8 @@ export default {
   data(){
     return {
       // 左侧菜单数据
-      menulist: []
+      menulist: [],
+      isCollapse: false,
     }
   },  
   created(){
@@ -73,6 +75,10 @@ export default {
           .catch(function (error) {
             console.log(error);
           });
+    },
+    // 点击按钮，切换左侧菜单的折叠与展开
+    toggleCollapse(){
+      this.isCollapse = !this.isCollapse  // isCollapse取反，true变成false，false变成true
     }
   },
 };
@@ -109,5 +115,16 @@ export default {
 }
 .iconfont{
   margin-right: 10px;
+}
+.toggle-button{
+  background-color: #4A5064;
+  font-size: 10px;  
+  line-height: 24px;
+  color: #fff;
+  text-align: center;   // 字体居中
+  letter-spacing: 0.2em;  //字体间隔
+  cursor: pointer; // 鼠标放上去变成小手的模式
+
+  
 }
 </style>
