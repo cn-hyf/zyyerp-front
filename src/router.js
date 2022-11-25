@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router  from 'vue-router';  
 import Login from './components/Login.vue';
 import Home from './components/Home.vue';
+import Welcome from './components/Welcome.vue';
 
 Vue.use(Router)
 
@@ -14,7 +15,12 @@ const router =  new Router({
       path: '/login', component: Login  // 当用户访问/login路径时，展示Login组件，也就是Login.vue页面
     },
     {
-      path: '/home', component: Home
+      path: '/home', component: Home, redirect: '/welcome',  // 访问/home路径时重定向到welcome页面
+      children: [
+        {
+          path: '/welcome',component: Welcome   // Welcome.vue是嵌套在home.vue显示的，所以要当初home的子路由
+        }
+      ]
     }
   ]
 })
