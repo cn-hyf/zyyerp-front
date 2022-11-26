@@ -12,13 +12,17 @@
       <!--搜索区域-->
       <el-row :gutter="20">
         <!--gutter表示列与列的间隙-->
-        <el-col :span="7">
-          <el-input placeholder="请输入内容">
-            <el-button slot="append" icon="el-icon-search"></el-button>
-          </el-input>
+        <el-col :span="4">
+          <el-input placeholder="请输入仓库名称" v-model="queryInfo.query.whName" :clearable="true" @clear="getWarehourseList"></el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary">添加仓库</el-button>
+          <el-input placeholder="请输入利润中心" v-model="queryInfo.query.profitCenter" :clearable="true" @clear="getWarehourseList"></el-input>
+        </el-col>
+        <el-col :span="4">
+          <el-input placeholder="请输入仓库地址" v-model="queryInfo.query.whAddress" :clearable="true" @clear="getWarehourseList"></el-input>
+        </el-col>
+        <el-col :span="4">
+          <el-button icon="el-icon-search" @click="getWarehourseList" type="primary">搜索</el-button>
         </el-col>
       </el-row>
       <!--仓库列表区域-->
@@ -72,10 +76,15 @@ export default {
     return {
       //获取仓库列表的参数对象
       queryInfo: {
-        query: '',
         papeNum: 1, //当前页数
         pageSize: 10, //当前每页显示条目个数
+        query:{
+          whName: '',
+          profitCenter:'',
+          whAddress:''
+        }
       },
+  
       warehouselist: [],
       total: 0,
     };
@@ -91,6 +100,9 @@ export default {
           params: {
             papeNum: this.queryInfo.papeNum,
             pageSize: this.queryInfo.pageSize,
+            whName: this.queryInfo.query.whName,
+            profitCenter: this.queryInfo.query.profitCenter,
+            whAddress: this.queryInfo.query.whAddress
           },
         })
         .then((res) => {
