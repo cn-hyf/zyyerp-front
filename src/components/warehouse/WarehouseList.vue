@@ -23,16 +23,17 @@
       </el-row>
       <!--仓库列表区域-->
       <el-table :data="warehouselist" style="width: 100%" :border="true" :stripe="true">
-        <el-table-column type="index"></el-table-column> <!--索引列-->
+        <!--索引列-->
+        <el-table-column type="index" ></el-table-column> 
         <el-table-column prop="whName" label="仓库名称" width="180"></el-table-column>
         <el-table-column prop="profitCenter" label="利润中心" width="180"></el-table-column>
         <el-table-column prop="whAddress" label="仓库地址" width="180"></el-table-column>
         <el-table-column prop="whCapacity" label="仓库总容量" width="180"></el-table-column>
         <el-table-column prop="whRemarks" label="备注" width="180"></el-table-column>
         <el-table-column label="状态" width="180">
-          <template slot-scope="scope"> <!--slot-scope表示作用域插槽，scope.row会把一条数据拿出来-->
-            <el-switch :active-value="1" :inactive-value="0"  v-model="scope.row.whStatus"> 
-            </el-switch>
+          <template slot-scope="scope">
+            <!--slot-scope表示作用域插槽，scope.row会把一条数据拿出来-->
+            <el-switch :active-value="1" :inactive-value="0" v-model="scope.row.whStatus"></el-switch>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="3000px">
@@ -46,6 +47,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <!--分页区域，@size-change在pageSize改变时会触发。 @current-change在currentPage 改变时会触发。:current-page：当前页数。:page-size每页显示条目个数。-->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="this.queryInfo.papeNum"
+        :page-sizes="[1, 2, 3, 4]"
+        :page-size="this.queryInfo.pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+      ></el-pagination>
     </el-card>
   </div>
 </template>
@@ -57,10 +68,11 @@ export default {
       //获取仓库列表的参数对象
       queryInfo: {
         query: '',
-        papeNum: 1,
-        pageSize: 2,
+        papeNum: 1, //当前页数
+        pageSize: 2, //当前每页显示条目个数
       },
       warehouselist: [],
+      total: 0,
     };
   },
   created() {
@@ -70,10 +82,16 @@ export default {
     // 获取仓库列表
     getWarehourseList() {
       this.$http
-        .get('/warehouse/list', this.queryInfo)
+        .get('/warehouse/list', {
+          params: {
+            papeNum: this.queryInfo.papeNum,
+            pageSize: this.queryInfo.pageSize,
+          },
+        })
         .then((res) => {
           if (res.data.code == 200) {
             this.warehouselist = res.data.data.list;
+            this.total = res.data.data.total
           } else {
             this.$message.error('获取数据失败!');
           }
@@ -82,6 +100,17 @@ export default {
           console.log(error);
         });
     },
+    //pageSize 改变时会触发
+    handleSizeChange(newSize) {
+      this.queryInfo.pageSize = newSize;
+      this.getWarehourseList();
+    },
+    //currentPage 改变时会触发
+    handleCurrentChange(newPage) {
+      this.queryInfo.papeNum = newPage;
+      this.getWarehourseList();
+    },
+
   },
 };
 </script>
