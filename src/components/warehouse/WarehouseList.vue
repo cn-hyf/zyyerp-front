@@ -24,7 +24,7 @@
       <!--仓库列表区域-->
       <el-table :data="warehouselist" style="width: 100%" :border="true" :stripe="true">
         <!--索引列-->
-        <el-table-column type="index" ></el-table-column> 
+        <el-table-column type="index"></el-table-column>
         <el-table-column prop="whName" label="仓库名称" width="180"></el-table-column>
         <el-table-column prop="profitCenter" label="利润中心" width="180"></el-table-column>
         <el-table-column prop="whAddress" label="仓库地址" width="180"></el-table-column>
@@ -32,8 +32,13 @@
         <el-table-column prop="whRemarks" label="备注" width="180"></el-table-column>
         <el-table-column label="状态" width="180">
           <template slot-scope="scope">
-            <!--slot-scope表示作用域插槽，scope.row会把一条数据拿出来-->
-            <el-switch :active-value="1" :inactive-value="0" v-model="scope.row.whStatus"></el-switch>
+            <!--slot-scope表示作用域插槽，scope.row会把一条数据拿出来。1是启用，0是禁用-->
+            <el-switch
+              :active-value="1"
+              :inactive-value="0"
+              v-model="scope.row.whStatus"
+              @change="stateChange(scope.row)"
+            ></el-switch>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="3000px">
@@ -69,7 +74,7 @@ export default {
       queryInfo: {
         query: '',
         papeNum: 1, //当前页数
-        pageSize: 2, //当前每页显示条目个数
+        pageSize: 10, //当前每页显示条目个数
       },
       warehouselist: [],
       total: 0,
@@ -91,7 +96,7 @@ export default {
         .then((res) => {
           if (res.data.code == 200) {
             this.warehouselist = res.data.data.list;
-            this.total = res.data.data.total
+            this.total = res.data.data.total;
           } else {
             this.$message.error('获取数据失败!');
           }
@@ -110,7 +115,25 @@ export default {
       this.queryInfo.papeNum = newPage;
       this.getWarehourseList();
     },
-
+    // 监听switch开关状态的改变
+    stateChange(warehouserInfo) {
+      var params = new URLSearchParams();
+      params.append('id', warehouserInfo.id);
+      params.append('whStatus', warehouserInfo.whStatus) 
+      this.$http
+        .post('/warehouse/updateStatus', params)
+        .then((res) => {
+          if (res.data.code == 200) {
+            this.$message.success('更新数据状态成功');
+          } else {
+            warehouserInfo.whStatus = !warehouserInfo.whStatus;
+            this.$message.error('更新数据状态失败!');
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
   },
 };
 </script>
