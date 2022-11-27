@@ -44,15 +44,15 @@
         </el-col>
       </el-row>
       <!--仓库列表区域-->
-      <el-table :data="warehouselist" style="width: 100%" :border="true" :stripe="true">
+      <el-table :data="warehouselist" style="width: 100%" :stripe="true">
         <!--索引列-->
         <el-table-column type="index"></el-table-column>
-        <el-table-column prop="whName" label="仓库名称" width="180"></el-table-column>
-        <el-table-column prop="profitCenter" label="利润中心" width="180"></el-table-column>
-        <el-table-column prop="whAddress" label="仓库地址" width="180"></el-table-column>
-        <el-table-column prop="whCapacity" label="仓库总容量" width="180"></el-table-column>
-        <el-table-column prop="whRemarks" label="备注" width="180"></el-table-column>
-        <el-table-column label="状态" width="180">
+        <el-table-column prop="whName" label="仓库名称" width="180px"></el-table-column>
+        <el-table-column prop="profitCenter" label="利润中心" width="180px"></el-table-column>
+        <el-table-column prop="whAddress" label="仓库地址" width="180px"></el-table-column>
+        <el-table-column prop="whCapacity" label="仓库总容量" width="180px"></el-table-column>
+        <el-table-column prop="whRemarks" label="备注" width="180px"></el-table-column>
+        <el-table-column label="状态" width="180px">
           <template slot-scope="scope">
             <!--slot-scope表示作用域插槽，scope.row会把一条数据拿出来。1是启用，0是禁用-->
             <el-switch
@@ -63,12 +63,17 @@
             ></el-switch>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="3000px">
+        <el-table-column label="操作" width="300px">
           <template slot-scope="scope">
             <!--查看按钮-->
             <el-button type="success" icon="el-icon-search" size="mini">查看</el-button>
             <!--修改按钮-->
-            <el-button type="primary" icon="el-icon-edit" size="mini">编辑</el-button>
+            <el-button
+              type="primary"
+              icon="el-icon-edit"
+              size="mini"
+              @click="showEditDialog(scope.row.id)"
+            >编辑</el-button>
             <!--删除按钮-->
             <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
           </template>
@@ -112,6 +117,32 @@
         <el-button type="primary" @click="addWarehourse">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!--修改仓库的对话框-->
+    <el-dialog title="修改仓库" :visible.sync="editDialogVisible" width="50%" @close="editDialogClosed">
+      <!--内容主体区域-->
+      <el-form :model="editForm" :rules="editFormRules" ref="editFormRef">
+        <el-form-item label="仓库名称" prop="whName" label-width="180px">
+          <el-input v-model="editForm.whName"></el-input>
+        </el-form-item>
+        <el-form-item label="利润中心" prop="profitCenter" label-width="180px">
+          <el-input v-model="editForm.profitCenter"></el-input>
+        </el-form-item>
+        <el-form-item label="仓库地址" prop="whAddress" label-width="180px">
+          <el-input v-model="editForm.whAddress"></el-input>
+        </el-form-item>
+        <el-form-item label="仓库总容量" prop="whCapacity" label-width="180px">
+          <el-input v-model="editForm.whCapacity"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="whRemarks" label-width="180px">
+          <el-input v-model="editForm.whRemarks"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editWarehourseInfo">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -119,7 +150,7 @@
 export default {
   data() {
     return {
-      //获取仓库列表的参数对象
+      //查询仓库数据的参数对象
       queryInfo: {
         papeNum: 1, //当前页数
         pageSize: 10, //当前每页显示条目个数
@@ -132,6 +163,7 @@ export default {
       warehouselist: [],
       total: 0,
       addDialogVisible: false,
+      editDialogVisible: false,
       //添加仓库数据
       addForm: {
         whName: '',
@@ -142,6 +174,24 @@ export default {
       },
       //添加仓库表单的验证规则对象
       addFormRules: {
+        whName: [
+          { required: true, message: '请输入仓库名称', trigger: 'blur' },
+        ],
+        profitCenter: [
+          { required: true, message: '请输入利润中心', trigger: 'blur' },
+        ],
+      },
+      // 查询到的仓库信息对象
+      editForm: {
+        id: '',
+        whName: '',
+        profitCenter: '',
+        whAddress: '',
+        whCapacity: '',
+        whRemarks: '',
+      },
+      // 编辑仓库表单的验证规则对象
+      editFormRules: {
         whName: [
           { required: true, message: '请输入仓库名称', trigger: 'blur' },
         ],
@@ -208,9 +258,9 @@ export default {
           console.log(error);
         });
     },
-    //监听添加用户对话框的关闭事件
+    //监听添加仓库对话框的关闭事件
     addDialogClosed() {
-      this.$refs.addFormRef.resetFields(); // 表单的重置
+      this.$refs.addFormRef.resetFields(); // 表单的重置 也可以重置验证规则
     },
     // 点击按钮发送请求添加仓库
     addWarehourse() {
@@ -224,11 +274,55 @@ export default {
             if (res.data.code == 200) {
               this.$message.success('添加数据成功');
               // 关闭对话框
-              this.addDialogVisible=false 
+              this.addDialogVisible = false;
               // 重新加载页面
-              this.getWarehourseList()
+              this.getWarehourseList();
             } else {
               this.$message.error('添加数据失败!');
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      });
+    },
+    // 展示编辑的对话框
+    showEditDialog(id) {
+      this.editDialogVisible = true;
+      this.$http
+        .get('/warehouse/selectById/' + id)
+        .then((res) => {
+          if (res.data.code == 200) {
+            this.editForm = res.data.data;
+          } else {
+            this.$message.error('获取数据失败!');
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+    // 监听编辑仓库对话框的关闭事件
+    editDialogClosed() {
+      this.$refs.editFormRef.resetFields(); // 表单的重置 也可以重置验证规则
+    },
+    // 发送编辑请求修改仓库
+    editWarehourseInfo() {
+      this.$refs.editFormRef.validate((valid) => {
+        // 预验证表单
+        if (!valid) return;
+        // 发起修改仓库的网络请求
+        this.$http
+          .post('/warehouse/editById',this.editForm)
+          .then((res) => {
+            if (res.data.code == 200) {
+              this.$message.success('修改数据成功');
+              // 关闭对话框
+              this.addDialogVisible = false;
+              // 重新加载页面
+              this.getWarehourseList();
+            } else {
+              this.$message.error('修改数据失败!');
             }
           })
           .catch(function (error) {
