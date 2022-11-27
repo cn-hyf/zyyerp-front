@@ -66,7 +66,12 @@
         <el-table-column label="操作" width="300px">
           <template slot-scope="scope">
             <!--查看按钮-->
-            <el-button type="success" icon="el-icon-search" size="mini">查看</el-button>
+            <el-button
+              type="success"
+              icon="el-icon-search"
+              size="mini"
+              @click="showDialog(scope.row.id)"
+            >查看</el-button>
             <!--修改按钮-->
             <el-button
               type="primary"
@@ -75,7 +80,12 @@
               @click="showEditDialog(scope.row.id)"
             >编辑</el-button>
             <!--删除按钮-->
-            <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              size="mini"
+              @click="removeById(scope.row.id)"
+            >删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -90,6 +100,33 @@
         :total="total"
       ></el-pagination>
     </el-card>
+
+    <!--查看仓库的对话框-->
+    <el-dialog title="查看仓库" :visible.sync="selectDialogVisible" width="50%">
+      <!--内容主体区域-->
+      <el-form :model="editForm" ref="addFormRef">
+        <el-form-item label="仓库名称" label-width="180px">
+          <el-input v-model="editForm.whName" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="利润中心" label-width="180px">
+          <el-input v-model="editForm.profitCenter" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="仓库地址" label-width="180px">
+          <el-input v-model="editForm.whAddress" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="仓库总容量" label-width="180px">
+          <el-input v-model="editForm.whCapacity" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" label-width="180px">
+          <el-input v-model="editForm.whRemarks" :disabled="true"></el-input>
+        </el-form-item>
+      </el-form>
+      <!--底部区域-->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="selectDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="selectDialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
 
     <!--添加仓库的对话框-->
     <el-dialog title="添加仓库" :visible.sync="addDialogVisible" width="50%" @close="addDialogClosed">
@@ -164,6 +201,7 @@ export default {
       total: 0,
       addDialogVisible: false,
       editDialogVisible: false,
+      selectDialogVisible: false,
       //添加仓库数据
       addForm: {
         whName: '',
@@ -286,7 +324,7 @@ export default {
           });
       });
     },
-    // 展示编辑的对话框
+    // 打开编辑的对话框,并获取数据
     showEditDialog(id) {
       this.editDialogVisible = true;
       this.$http
@@ -313,7 +351,7 @@ export default {
         if (!valid) return;
         // 发起修改仓库的网络请求
         this.$http
-          .post('/warehouse/editById',this.editForm)
+          .post('/warehouse/editById', this.editForm)
           .then((res) => {
             if (res.data.code == 200) {
               this.$message.success('修改数据成功');
@@ -330,6 +368,55 @@ export default {
           });
       });
     },
+    // 根据id删除
+    removeById(id) {
+      this.$confirm('此操作将永久删除该数据, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      })
+        .then(() => {
+          this.$http
+            .get('/warehouse/removeById/' + id)
+            .then((res) => {
+              if (res.data.code == 200) {
+                this.$message({
+                  type: 'success',
+                  message: '删除数据成功!',
+                });
+                // 重新加载页面
+                this.getWarehourseList();
+              } else {
+                this.$message.error('删除数据失败!');
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除',
+          });
+        });
+    },
+    //查看
+    showDialog(id){
+      this.selectDialogVisible = true;
+      this.$http
+        .get('/warehouse/selectById/' + id)
+        .then((res) => {
+          if (res.data.code == 200) {
+            this.editForm = res.data.data;
+          } else {
+            this.$message.error('获取数据失败!');
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   },
 };
 </script>
