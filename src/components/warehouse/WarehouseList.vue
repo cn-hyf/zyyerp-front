@@ -13,16 +13,34 @@
       <el-row :gutter="20">
         <!--gutter表示列与列的间隙-->
         <el-col :span="4">
-          <el-input placeholder="请输入仓库名称" v-model="queryInfo.query.whName" :clearable="true" @clear="getWarehourseList"></el-input>
+          <el-input
+            placeholder="请输入仓库名称"
+            v-model="queryInfo.query.whName"
+            :clearable="true"
+            @clear="getWarehourseList"
+          ></el-input>
         </el-col>
         <el-col :span="4">
-          <el-input placeholder="请输入利润中心" v-model="queryInfo.query.profitCenter" :clearable="true" @clear="getWarehourseList"></el-input>
+          <el-input
+            placeholder="请输入利润中心"
+            v-model="queryInfo.query.profitCenter"
+            :clearable="true"
+            @clear="getWarehourseList"
+          ></el-input>
         </el-col>
         <el-col :span="4">
-          <el-input placeholder="请输入仓库地址" v-model="queryInfo.query.whAddress" :clearable="true" @clear="getWarehourseList"></el-input>
+          <el-input
+            placeholder="请输入仓库地址"
+            v-model="queryInfo.query.whAddress"
+            :clearable="true"
+            @clear="getWarehourseList"
+          ></el-input>
         </el-col>
         <el-col :span="4">
           <el-button icon="el-icon-search" @click="getWarehourseList" type="primary">搜索</el-button>
+        </el-col>
+        <el-col :span="4">
+          <el-button icon="el-icon-add" @click="addDialogVisible = true" type="primary">添加仓库</el-button>
         </el-col>
       </el-row>
       <!--仓库列表区域-->
@@ -61,12 +79,39 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="this.queryInfo.papeNum"
-        :page-sizes="[1, 2, 3, 4]"
+        :page-sizes="[1, 2, 5, 10]"
         :page-size="this.queryInfo.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"
       ></el-pagination>
     </el-card>
+
+    <!--添加仓库的对话框-->
+    <el-dialog title="添加仓库" :visible.sync="addDialogVisible" width="50%" @close="addDialogClosed">
+      <!--内容主体区域-->
+      <el-form :model="addForm" :rules="addFormRules" ref="addFormRef">
+        <el-form-item label="仓库名称" prop="whName" label-width="180px">
+          <el-input v-model="addForm.whName"></el-input>
+        </el-form-item>
+        <el-form-item label="利润中心" prop="profitCenter" label-width="180px">
+          <el-input v-model="addForm.profitCenter"></el-input>
+        </el-form-item>
+        <el-form-item label="仓库地址" prop="whAddress" label-width="180px">
+          <el-input v-model="addForm.whAddress"></el-input>
+        </el-form-item>
+        <el-form-item label="仓库总容量" prop="whCapacity" label-width="180px">
+          <el-input v-model="addForm.whCapacity"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="whRemarks" label-width="180px">
+          <el-input v-model="addForm.whRemarks"></el-input>
+        </el-form-item>
+      </el-form>
+      <!--底部区域-->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addWarehourse">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -78,15 +123,32 @@ export default {
       queryInfo: {
         papeNum: 1, //当前页数
         pageSize: 10, //当前每页显示条目个数
-        query:{
+        query: {
           whName: '',
-          profitCenter:'',
-          whAddress:''
-        }
+          profitCenter: '',
+          whAddress: '',
+        },
       },
-  
       warehouselist: [],
       total: 0,
+      addDialogVisible: false,
+      //添加仓库数据
+      addForm: {
+        whName: '',
+        profitCenter: '',
+        whAddress: '',
+        whCapacity: '',
+        whRemarks: '',
+      },
+      //添加仓库表单的验证规则对象
+      addFormRules: {
+        whName: [
+          { required: true, message: '请输入仓库名称', trigger: 'blur' },
+        ],
+        profitCenter: [
+          { required: true, message: '请输入利润中心', trigger: 'blur' },
+        ],
+      },
     };
   },
   created() {
@@ -102,7 +164,7 @@ export default {
             pageSize: this.queryInfo.pageSize,
             whName: this.queryInfo.query.whName,
             profitCenter: this.queryInfo.query.profitCenter,
-            whAddress: this.queryInfo.query.whAddress
+            whAddress: this.queryInfo.query.whAddress,
           },
         })
         .then((res) => {
@@ -131,7 +193,7 @@ export default {
     stateChange(warehouserInfo) {
       var params = new URLSearchParams();
       params.append('id', warehouserInfo.id);
-      params.append('whStatus', warehouserInfo.whStatus) 
+      params.append('whStatus', warehouserInfo.whStatus);
       this.$http
         .post('/warehouse/updateStatus', params)
         .then((res) => {
@@ -145,6 +207,34 @@ export default {
         .catch(function (error) {
           console.log(error);
         });
+    },
+    //监听添加用户对话框的关闭事件
+    addDialogClosed() {
+      this.$refs.addFormRef.resetFields(); // 表单的重置
+    },
+    // 点击按钮发送请求添加仓库
+    addWarehourse() {
+      //表单预验证
+      this.$refs.addFormRef.validate((valid) => {
+        if (!valid) return;
+        // 发起添加仓库的网络请求
+        this.$http
+          .post('/warehouse/add', this.addForm)
+          .then((res) => {
+            if (res.data.code == 200) {
+              this.$message.success('添加数据成功');
+              // 关闭对话框
+              this.addDialogVisible=false 
+              // 重新加载页面
+              this.getWarehourseList()
+            } else {
+              this.$message.error('添加数据失败!');
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      });
     },
   },
 };
